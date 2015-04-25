@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 20 19:13:51 2015
+Functions tp implement an artificial neural network(multi-layer perceptron)
+@author: qinzhou
+"""
+
+import numpy as np
+from matplotlib import pyplot as plt
+
+class MLP_1HL():
+    """Implements of an one hidden-layer MLP
+    Reference:
+    http://www.deeplearning.net/tutorial/mlp.html#mlp
+    http://nbviewer.ipython.org/github/cse40647/cse40647/blob/sp.14/33%20-%20Artificial%20Neural%20Networks.ipynb
+    """
+
+    def __init__(self, max_iter = 500, reg_lambda = 0.01,
+                 hidden_layer_size = 25):
+        self.reg_lambda = reg_lambda
+        self.hidden_layer_size = hidden_layer_size
+        self.max_iter = max_iter
+        self.active_fun = self.sigmoid
+
+    def sigmoid(self, z):
+        """
+        implement of logistic function
+        :param z: output of last_layer
+        :return: activation of last_layer
+        """
+        return 1/ (1+ np.exp(-z))
+
+    def tanh_fun(self, z):
+        a = np.exp(z)
+        b = np.exp(-z)
+        return (a - b) / ( a+ b)
+
+    def tanh_primer(self, z):
+        return 1 - self.tanh_fun(z)**2
+
+    def sigmoid_primer(self, z):
+        """
+        implement of derivation of logistic function
+        :param z:
+        :return:
+        """
+        return self.sigmoid(z) * (1 - self.sigmoid(z))
+
+    def weight_init(self, rng, n_in, n_out):
+        return np.asarray(
+            rng.uniform(
+                low = -np.sqrt(6/(n_in + n_out)),
+                high = np.sqrt(6/(n_in + n_out)),
+                size = (n_in, n_out)
+            )
+        )
+
+
