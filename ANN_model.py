@@ -6,6 +6,7 @@ Functions tp implement an artificial neural network(multi-layer perceptron)
 """
 
 import numpy as np
+from scipy import optimize
 
 
 class MLP_1HL():
@@ -16,11 +17,13 @@ class MLP_1HL():
     """
 
     def __init__(self, max_iter=500, reg_lambda=0.01,
-                 hidden_layer_size=25):
+                 hidden_layer_size=25, opt_method = "TNC"):
         self.reg_lambda = reg_lambda
         self.hidden_layer_size = hidden_layer_size
         self.max_iter = max_iter
         self.active_fun = self.sigmoid
+        self.active_fun_prime = self.sigmoid_primer
+        self.opt_method = opt_method
 
     def sigmoid(self, z):
         """
@@ -51,7 +54,7 @@ class MLP_1HL():
             rng.uniform(
                 low=-np.sqrt(6 / (n_in + n_out)),
                 high=np.sqrt(6 / (n_in + n_out)),
-                size=(n_in, n_out)
+                size=(n_out, n_in+1)
             )
         )
 
@@ -143,6 +146,63 @@ class MLP_1HL():
         Delta1, Delta2 = 0, 0
         for i, x in enumerate(X):
             a1, z2, a2, z3, a3 = self.MLP_forward(x, t1, t2)
+            d3 = (a3 - Y[i, :]) * self.active_fun_prime(a3)  # delta of output layer 1*o
+            d2 = np.dot(d3.T, t_2) * self.active_fun_prime(z2)  # delta of hidden layer
+
+            # weight update
+            Delta2 += np.dot(d3[np.newaxis].T, a2[np.newaxis])
+            Delta1 += np.dot(d2[np.newaxis].T, a1[np.newaxis])
+
+        # the unregularized gradients of each weight
+        Theta1_grad = Delta1 * (1 / n)
+        Theta2_grad = Delta2 * (1 / n)
+
+        if reg_lambda:
+            Theta1_grad = Theta1_grad[:, 1:] + reg_lambda * t_1
+            Theta2_grad = Theta2_grad[:, 1:] + reg_lambda * t_2
+
+        return self.pack_thetas(Theta1_grad, Theta2_grad)
+
+    def fit(self, X, y):
+        """
+        fit the modle to samples
+        :param X: the training samples n*m
+        :param y: the label of training samples n*1
+        :return:
+        """
+        num_samples = X.shape[0]
+        num_features = X.shape[1]
+        num_labels = len(set(y))
+
+        # ramdom initialize the weights
+        Theta1_0 = self.weight_init(np.random.randint(1,100),num_features,self.hidden_layer_size)
+        Theta2_0 = self.weight_init(np.random.randint(1,100),self.hidden_layer_size,num_labels)
+
+        Theta_pack = self.pack_thetas(Theta1_0,Theta2_0)
+
+        # Minimize the objective (cost) function and return the resulting thetas.
+        options = {'max_iter': self.max_iter}
+        _res = optimize.minimize(self.MLP_Cost, Theta_pack, jac=self.MLP_BP, method=self.opt_method,
+                                 args=(num_features, self.hidden_layer_size, num_labels, X, y, 0), options=options)
+
+        # set the fitted thetas
+        self.t1, self.t2 = self.unpack_thetas(_res,num_features,self.hidden_layer_size,num_labels)
+
+    def predict_proba(self, X):
+        _,_,_,_,h = self.MLP_forward(X,self.t1, self.t2)
+        return h
+
+    def predict(self, X):
+        return self.predict_proba(X).argmax(0)
+
+
+
+
+
+
+
+
+
 
 
 
