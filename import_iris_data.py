@@ -7,9 +7,7 @@ from sklearn import cross_validation
 from sklearn import preprocessing
 import os
 
-def generate_data(label_encode = True, n_folds = 5, iris_path = './iris.data'):
-    label_encode = True
-    n_folds = 5
+def generate_data(label_encode = True, n_folds = 10, iris_path = './iris.data'):
 
     # Load the Iris flower dataset
     if not os.path.exists(iris_path):
@@ -35,4 +33,4 @@ def generate_data(label_encode = True, n_folds = 5, iris_path = './iris.data'):
         labels = y
 
     # Generate k stratified folds of the data.
-    return list(cross_validation.StratifiedKFold(labels, n_folds))
+    return X,labels,n_folds,list(cross_validation.StratifiedKFold(labels, n_folds))
