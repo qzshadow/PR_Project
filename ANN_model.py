@@ -160,7 +160,7 @@ class MLP_1HL(ClassifierMixin):
 
         return a1, z2, a2, z3, a3
 
-    def function(self, thetas, input_layer_size, hidden_layer_size, num_labels, X, y, reg_lambda):
+    def cost(self, thetas, input_layer_size, hidden_layer_size, num_labels, X, y, reg_lambda):
         """Returns the total cost using a generalization of the regularized 
         logistic regression cost function.
         """
@@ -184,7 +184,7 @@ class MLP_1HL(ClassifierMixin):
 
         return J
 
-    def function_prime(self, thetas, input_layer_size, hidden_layer_size, num_labels, X, y, reg_lambda):
+    def back_propagation(self, thetas, input_layer_size, hidden_layer_size, num_labels, X, y, reg_lambda):
         """Returns the Jacobian matrix (the matrix of all first-order partial 
         derivatives) of the cost function.
         """
@@ -243,7 +243,7 @@ class MLP_1HL(ClassifierMixin):
 
         # Minimize the objective (cost) function and return the resulting thetas.
         options = {'maxiter': self.maxiter}
-        _res = optimize.minimize(self.function, thetas0, jac=self.function_prime, method=self.method, 
+        _res = optimize.minimize(self.cost, thetas0, jac=self.back_propagation, method=self.method,
                                  args=(input_layer_size, self.hidden_layer_size, num_labels, X, y, 0), options=options)
 
         # Set the fitted thetas.
