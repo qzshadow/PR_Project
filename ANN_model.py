@@ -1,21 +1,25 @@
 import numpy as np
 from scipy import optimize
 from sklearn.base import ClassifierMixin
+import os
+
 
 class MLP_1HL(ClassifierMixin):
     """Implements an artifical neural network (ANN) with one hidden layer.
 
 
     """
-    def __init__(self, reg_lambda=0, epsilon_init=0.12, hidden_layer_size=25, 
-                 opti_method='TNC', maxiter=500):
-        self.reg_lambda = reg_lambda # weight for the logistic regression cost
-        self.epsilon_init = epsilon_init # learning rate
-        self.hidden_layer_size = hidden_layer_size # size of the hidden layer
-        self.activation_func = self.sigmoid # activation function
-        self.activation_func_prime = self.sigmoid_prime # derivative of the activation function
-        self.method = opti_method # optimization method
-        self.maxiter = maxiter # maximum number of iterations
+
+    def __init__(self, reg_lambda=0, epsilon_init=0.12, hidden_layer_size=25,
+                 opti_method='TNC', maxiter=500, load_theta0 = False):
+        self.reg_lambda = reg_lambda  # weight for the logistic regression cost
+        self.epsilon_init = epsilon_init  # learning rate
+        self.hidden_layer_size = hidden_layer_size  # size of the hidden layer
+        self.activation_func = self.sigmoid  # activation function
+        self.activation_func_prime = self.sigmoid_prime  # derivative of the activation function
+        self.method = opti_method  # optimization method
+        self.maxiter = maxiter  # maximum number of iterations
+        self.load_theta0 = load_theta0 #for test only
 
     def sigmoid(self, z):
         """Returns the logistic function."""
@@ -25,11 +29,12 @@ class MLP_1HL(ClassifierMixin):
         """Returns the derivative of the logistic function."""
         sig = self.sigmoid(z)
 
-        return sig * (1-sig)
+        return sig * (1 - sig)
+
 
     def sumsqr(self, a):
         """Returns the sum of squared values."""
-        return np.sum(a**2)
+        return np.sum(a ** 2)
 
     def rand_init(self, l_in, l_out):
         """Generates an (l_out x l_in+1) array of thetas (threshold values), 
@@ -43,7 +48,7 @@ class MLP_1HL(ClassifierMixin):
         -------
         Randomly initialized thetas (threshold values).
         """
-        return np.random.rand(l_out, l_in+1) * 2 * self.epsilon_init - self.epsilon_init
+        return np.random.rand(l_out, l_in + 1) * 2 * self.epsilon_init - self.epsilon_init
 
     # Pack thetas (threshold values) into a one-dimensional array.
     def pack_thetas(self, t1, t2):
@@ -142,9 +147,9 @@ class MLP_1HL(ClassifierMixin):
         m = X.shape[0]
         ones = None
         if len(X.shape) == 1:
-            ones = np.array(1).reshape(1,)
+            ones = np.array(1).reshape(1, )
         else:
-            ones = np.ones(m).reshape(m,1)
+            ones = np.ones(m).reshape(m, 1)
 
         # Input layer.
         a1 = np.hstack((ones, X))
@@ -170,17 +175,17 @@ class MLP_1HL(ClassifierMixin):
         Y = np.eye(num_labels)[y]
 
         _, _, _, _, h = self._forward(X, t1, t2)
-        costPositive = -Y * np.log(h).T # the cost when y is 1
-        costNegative = (1 - Y) * np.log(1 - h).T # the cost when y is 0
-        cost = costPositive - costNegative # the total cost
-        J = np.sum(cost) / m # the (unregularized) cost function
+        costPositive = -Y * np.log(h).T  # the cost when y is 1
+        costNegative = (1 - Y) * np.log(1 - h).T  # the cost when y is 0
+        cost = costPositive - costNegative  # the total cost
+        J = np.sum(cost) / m  # the (unregularized) cost function
 
         # For regularization.
         if reg_lambda != 0:
             t1f = t1[:, 1:]
             t2f = t2[:, 1:]
-            reg = (self.reg_lambda / (2*m)) * (self.sumsqr(t1f) + self.sumsqr(t2f)) # regularization term
-            J = J + reg # the regularized cost function
+            reg = (self.reg_lambda / (2 * m)) * (self.sumsqr(t1f) + self.sumsqr(t2f))  # regularization term
+            J = J + reg  # the regularized cost function
 
         return J
 
@@ -191,26 +196,27 @@ class MLP_1HL(ClassifierMixin):
         t1, t2 = self.unpack_thetas(thetas, input_layer_size, hidden_layer_size, num_labels)
 
         m = X.shape[0]
-        t1f = t1[:, 1:] # threshold values between the input layer and hidden layer (excluding the bias input)
-        t2f = t2[:, 1:] # threshold values between the hidden layer and output layer (excluding the bias input)
+        t1f = t1[:, 1:]  # threshold values between the input layer and hidden layer (excluding the bias input)
+        t2f = t2[:, 1:]  # threshold values between the hidden layer and output layer (excluding the bias input)
         Y = np.eye(num_labels)[y]
 
-        Delta1, Delta2 = 0, 0 # initialize matrix Deltas (cost function gradients)
+        Delta1, Delta2 = 0, 0  # initialize matrix Deltas (cost function gradients)
         # Iterate over the instances.
         for i, row in enumerate(X):
             # Forwardprop.
             a1, z2, a2, z3, a3 = self._forward(row, t1, t2)
 
             # Backprop.
-            d3 = a3 - Y[i, :].T # activation error (delta) in the output layer nodes
-            d2 = np.dot(t2f.T, d3) * self.activation_func_prime(z2) # activation error (delta) in the hidden layer nodes
+            d3 = a3 - Y[i, :].T  # activation error (delta) in the output layer nodes
+            d2 = np.dot(t2f.T, d3) * self.activation_func_prime(
+                z2)  # activation error (delta) in the hidden layer nodes
 
             # Update matrix Deltas (cost function gradients).
             Delta2 += np.dot(d3[np.newaxis].T, a2[np.newaxis])
             Delta1 += np.dot(d2[np.newaxis].T, a1[np.newaxis])
 
         # The (unregularized) gradients for each theta.
-        Theta1_grad = (1 / m) * Delta1 
+        Theta1_grad = (1 / m) * Delta1
         Theta2_grad = (1 / m) * Delta2
 
         # For regularization.
@@ -237,9 +243,13 @@ class MLP_1HL(ClassifierMixin):
         num_labels = len(set(y))
 
         # Initialize (random) thetas (threshold values).
-        theta1_0 = self.rand_init(input_layer_size, self.hidden_layer_size)
-        theta2_0 = self.rand_init(self.hidden_layer_size, num_labels)
-        thetas0 = self.pack_thetas(theta1_0, theta2_0)
+        if self.load_theta0 and os.path.exists('./theta0.npy'):
+            thetas0 = np.fromfile('./theta0.npy')
+        else:
+            print('warning!!! load thetas from file error! using random thetas')
+            theta1_0 = self.rand_init(input_layer_size, self.hidden_layer_size)
+            theta2_0 = self.rand_init(self.hidden_layer_size, num_labels)
+            thetas0 = self.pack_thetas(theta1_0, theta2_0)
 
         # Minimize the objective (cost) function and return the resulting thetas.
         options = {'maxiter': self.maxiter}
