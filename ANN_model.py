@@ -243,10 +243,14 @@ class MLP_1HL(ClassifierMixin):
         num_labels = len(set(y))
 
         # Initialize (random) thetas (threshold values).
-        if self.load_theta0 and os.path.exists('./theta0.npy'):
-            thetas0 = np.fromfile('./theta0.npy')
-        else:
+        if self.load_theta0 and os.path.exists('./thetas0.npy'):
+            thetas0 = np.fromfile('./thetas0.npy')
+        elif self.load_theta0 and not os.path.exists('./theta0.npy'):
             print('warning!!! load thetas from file error! using random thetas')
+            theta1_0 = self.rand_init(input_layer_size, self.hidden_layer_size)
+            theta2_0 = self.rand_init(self.hidden_layer_size, num_labels)
+            thetas0 = self.pack_thetas(theta1_0, theta2_0)
+        else:
             theta1_0 = self.rand_init(input_layer_size, self.hidden_layer_size)
             theta2_0 = self.rand_init(self.hidden_layer_size, num_labels)
             thetas0 = self.pack_thetas(theta1_0, theta2_0)
@@ -254,7 +258,7 @@ class MLP_1HL(ClassifierMixin):
         # Minimize the objective (cost) function and return the resulting thetas.
         options = {'maxiter': self.maxiter}
         _res = optimize.minimize(self.cost, thetas0, jac=self.back_propagation, method=self.method,
-                                 args=(input_layer_size, self.hidden_layer_size, num_labels, X, y, 0), options=options)
+                                 args=(input_layer_size, self.hidden_layer_size, num_labels, X, y, self.reg_lambda), options=options)
 
         # Set the fitted thetas.
         self.t1, self.t2 = self.unpack_thetas(_res.x, input_layer_size, self.hidden_layer_size, num_labels)
