@@ -9,14 +9,15 @@ from import_iris_data import generate_data
 from ANN_model import MLP_1HL
 
 # Generate classification objects.
-nn = MLP_1HL(reg_lambda=0,epsilon_init=0.12,hidden_layer_size=25,opti_method='TNC',maxiter=500,load_theta0=False)
+nn = MLP_1HL(reg_lambda=0, epsilon_init=0.12, hidden_layer_size=25, opti_method='TNC', maxiter=500, load_theta0=False,
+             activation_func='sigmoid')
 rfc = RandomForestClassifier(n_estimators=50)
 
-X,labels,n_folds,skf = generate_data(label_encode=True,n_folds=5,iris_path='./iris.data')
+X, labels, n_folds, skf = generate_data(label_encode=True, n_folds=5, iris_path='./iris.data')
 
 # Generate arrays for meta-level training and testing sets, which are n x len(clfs).
-scores_nn = np.zeros(n_folds) # scores for nn
-scores_rfc = np.zeros(n_folds) # scores for rfc
+scores_nn = np.zeros(n_folds)  # scores for nn
+scores_rfc = np.zeros(n_folds)  # scores for rfc
 
 print('Training classifiers...')
 # Iterate over the folds, each with training set and validation set indicies.
@@ -34,9 +35,9 @@ for i, (train_index, test_index) in enumerate(skf):
     # Train the models on the training set.
     # We time the training using the built-in timeit magic function.
     print('    Neural Network: ',
-    nn.fit(X_train, y_train))
+          nn.fit(X_train, y_train))
     print('    Random Forest: ',
-    rfc.fit(X_train, y_train))
+          rfc.fit(X_train, y_train))
 
     # Evaluate the models on the testing set.
     scores_nn[i] = metrics.accuracy_score(y_test, nn.predict(X_test))
@@ -48,8 +49,9 @@ print("\n")
 print('Artificial Neural Network Accuracy = %s' % (scores_nn.mean(axis=0)))
 print('Random Forest Accuracy = %s' % (scores_rfc.mean(axis=0)))
 
-def myShuffle(X,y):
+
+def myShuffle(X, y):
     num_features = len(X[0])
-    sample = np.hstack((X,y))
+    sample = np.hstack((X, y))
     random.shuffle(sample)
-    return sample[:,:num_features],sample[:,num_features:]
+    return sample[:, :num_features], sample[:, num_features:]

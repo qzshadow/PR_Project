@@ -9,7 +9,7 @@ from ANN_model import MLP_1HL
 from matplotlib import pyplot as plt
 
 # Generate classification objects.
-
+print("warning! this evalution would cost about 2 hours...")
 X,labels,n_folds,skf = generate_data(label_encode=True,n_folds=10,iris_path='./iris.data')
 # Generate arrays for meta-level training and testing sets, which are n x len(clfs).
 scores_nn = np.zeros(n_folds) # scores for nn
@@ -17,7 +17,7 @@ result = np.zeros(50)
 for idx, epsilon_init in enumerate(np.linspace(0.01,0.5,50)):
     train_result = np.zeros(10)
     for train_idx in np.arange(10):
-        nn = MLP_1HL(reg_lambda=0,epsilon_init=epsilon_init,hidden_layer_size=25,opti_method='TNC',maxiter=500,load_theta0=False)
+        nn = MLP_1HL(reg_lambda=0,epsilon_init=epsilon_init,hidden_layer_size=25,opti_method='TNC',maxiter=500,load_theta0=False,activation_func='sigmoid')
         print('Training classifiers...')
         # Iterate over the folds, each with training set and validation set indicies.
         for i, (train_index, test_index) in enumerate(skf):

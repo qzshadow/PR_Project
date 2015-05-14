@@ -11,15 +11,22 @@ class MLP_1HL(ClassifierMixin):
     """
 
     def __init__(self, reg_lambda=0, epsilon_init=0.12, hidden_layer_size=25,
-                 opti_method='TNC', maxiter=500, load_theta0 = False):
+                 opti_method='TNC', maxiter=500, load_theta0 = False, activation_func = 'sigmoid'):
         self.reg_lambda = reg_lambda  # weight for the logistic regression cost
         self.epsilon_init = epsilon_init  # learning rate
         self.hidden_layer_size = hidden_layer_size  # size of the hidden layer
-        self.activation_func = self.sigmoid  # activation function
-        self.activation_func_prime = self.sigmoid_prime  # derivative of the activation function
         self.method = opti_method  # optimization method
         self.maxiter = maxiter  # maximum number of iterations
         self.load_theta0 = load_theta0 #for test only
+        if activation_func == 'sigmoid':
+            self.activation_func = self.sigmoid  # activation function
+            self.activation_func_prime = self.sigmoid_prime  # derivative of the activation function
+        elif activation_func == 'tanh':
+            self.activation_func = self.tanh  # activation function
+            self.activation_func_prime = self.tanh_prime  # derivative of the activation function
+        elif activation_func == 'tanh2':
+            self.activation_func = self.tanh2  # activation function
+            self.activation_func_prime = self.tanh2_prime  # derivative of the activation function
 
     def sigmoid(self, z):
         """Returns the logistic function."""
@@ -30,7 +37,18 @@ class MLP_1HL(ClassifierMixin):
         sig = self.sigmoid(z)
 
         return sig * (1 - sig)
-
+        
+    def tanh(self,z):
+        return np.tanh(z)
+        
+    def tanh_prime(self,z):
+        return -np.tanh(z)**2 + 1
+        
+    def tanh2(self, z):
+        return 1.7159*np.tanh(2*z/3)
+        
+    def tanh2_prime(self, z):
+        return -1.1439*np.tanh(2*z/3)**2 + 1.1439
 
     def sumsqr(self, a):
         """Returns the sum of squared values."""
@@ -175,11 +193,22 @@ class MLP_1HL(ClassifierMixin):
         Y = np.eye(num_labels)[y]
 
         _, _, _, _, h = self._forward(X, t1, t2)
-        costPositive = -Y * np.log(h).T  # the cost when y is 1
-        costNegative = (1 - Y) * np.log(1 - h).T  # the cost when y is 0
-        cost = costPositive - costNegative  # the total cost
-        J = np.sum(cost) / m  # the (unregularized) cost function
+        
+        cost = 0
+        if self.activation_func == self.sigmoid:#using cross enptron cost
+            costPositive = -Y * np.log(h).T  # the cost when y is 1
+            costNegative = (1 - Y) * np.log(1 - h).T  # the cost when y is 0
+            cost = costPositive - costNegative  # the total cost
+            
+        elif self.activation_func == self.tanh:#using sigmoid cost
+            cost = -Y*np.log(np.exp(h)/np.sum(np.exp(h),axis=0)).T
+            
+        elif self.activation_func == self.tanh2:
+            cost = -Y*np.log(np.exp(h)/np.sum(np.exp(h),axis=0)).T
+            
 
+        J = np.sum(cost) / m  # the (unregularized) cost function
+        
         # For regularization.
         if reg_lambda != 0:
             t1f = t1[:, 1:]

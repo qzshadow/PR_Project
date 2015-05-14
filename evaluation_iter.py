@@ -9,7 +9,7 @@ from import_iris_data import generate_data
 from ANN_model import MLP_1HL
 
 # Generate classification objects.
-nn = MLP_1HL(reg_lambda=1000000,epsilon_init=0.2,hidden_layer_size=25,opti_method='TNC',maxiter=100,load_theta0=True)
+nn = MLP_1HL(reg_lambda=1000000,epsilon_init=0.2,hidden_layer_size=25,opti_method='TNC',maxiter=100,load_theta0=True,activation_func='sigmoid')
 
 X,labels,n_folds,skf = generate_data(label_encode=True,n_folds=10,iris_path='./iris.data')
 

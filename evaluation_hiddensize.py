@@ -15,7 +15,7 @@ X,labels,n_folds,skf = generate_data(label_encode=True,n_folds=10,iris_path='./i
 scores_nn = np.zeros(n_folds) # scores for nn
 result = np.zeros(28)
 for hid_size_idx, hidden_layer_size in enumerate(np.linspace(15,135,28)):
-    nn = MLP_1HL(reg_lambda=0,epsilon_init=0.2,hidden_layer_size=int(hidden_layer_size),opti_method='TNC',maxiter=400,load_theta0=False)
+    nn = MLP_1HL(reg_lambda=0,epsilon_init=0.2,hidden_layer_size=int(hidden_layer_size),opti_method='TNC',maxiter=400,load_theta0=False,activation_func='sigmoid')
     print('Training classifiers...')
     # Iterate over the folds, each with training set and validation set indicies.
     for i, (train_index, test_index) in enumerate(skf):

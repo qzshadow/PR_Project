@@ -19,7 +19,7 @@ result = np.zeros((10,7))
 for iter_idx, maxiter in enumerate(np.linspace(200,2000,10)):
     for reg_idx, reg_lambda in enumerate(np.hstack((np.linspace(0.01,0.1,3,endpoint=False),
                                                     np.linspace(0.1,1,4)))):
-        nn = MLP_1HL(reg_lambda=reg_lambda,epsilon_init=0.2,hidden_layer_size=25,opti_method='TNC',maxiter=int(maxiter),load_theta0=True)
+        nn = MLP_1HL(reg_lambda=reg_lambda,epsilon_init=0.2,hidden_layer_size=25,opti_method='TNC',maxiter=int(maxiter),load_theta0=True,activation_func='sigmoid')
         print('Training classifiers...')
         # Iterate over the folds, each with training set and validation set indicies.
         for i, (train_index, test_index) in enumerate(skf):
