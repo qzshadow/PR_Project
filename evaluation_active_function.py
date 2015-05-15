@@ -59,13 +59,14 @@ plt.ylabel('accuracy')
 plt.title('accuracy plot of three types of activation function')
 plt.legend(loc=4)
 
+plt.subplots_adjust(hspace = 0.5)
 ax = plt.subplot(2, 1, 2)
 for act_idx, act_func in enumerate(activation_type):
     plt.plot(np.linspace(10,200,20),time_result[act_idx],label='type of {}'.format(act_func))
 plt.xlabel('maxiumn iterater')
 plt.ylabel('time cost')
 plt.title('time cost plot of three types of activation function')
-plt.legend(loc=4)
+plt.legend(loc='upper left')
 
 def myShuffle(X, y):
     num_features = len(X[0])

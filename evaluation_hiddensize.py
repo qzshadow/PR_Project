@@ -47,7 +47,7 @@ plt.plot(np.linspace(15,135,28),result,label='accuracy',color='red')
 plt.xlabel('hidden_layer_size')
 plt.ylabel('accuracy')
 plt.title('accuracy plot by changing the hidden layer size')
-plt.legend(loc=4)
+plt.legend(loc='upper right')
 plt.show()
 
 def myShuffle(X,y):
