@@ -228,6 +228,8 @@ class MLP_1HL(ClassifierMixin):
         t1f = t1[:, 1:]  # threshold values between the input layer and hidden layer (excluding the bias input)
         t2f = t2[:, 1:]  # threshold values between the hidden layer and output layer (excluding the bias input)
         Y = np.eye(num_labels)[y]
+        if self.activation_func == 'tanh2':
+            Y[Y==1] = 1.1439
 
         Delta1, Delta2 = 0, 0  # initialize matrix Deltas (cost function gradients)
         # Iterate over the instances.

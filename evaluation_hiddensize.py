@@ -16,7 +16,7 @@ scores_nn = np.zeros(n_folds) # scores for nn
 result = np.zeros(28)
 for hid_size_idx, hidden_layer_size in enumerate(np.linspace(15,135,28)):
     nn = MLP_1HL(reg_lambda=0,epsilon_init=0.2,hidden_layer_size=int(hidden_layer_size),opti_method='TNC',maxiter=400,load_theta0=False,activation_func='sigmoid')
-    print('Training classifiers...')
+    print('\n\nTraining classifiers...')
     # Iterate over the folds, each with training set and validation set indicies.
     for i, (train_index, test_index) in enumerate(skf):
         print('  Fold {0}'.format(i))
@@ -37,7 +37,6 @@ for hid_size_idx, hidden_layer_size in enumerate(np.linspace(15,135,28)):
         # Evaluate the models on the testing set.
         scores_nn[i] = metrics.accuracy_score(y_test, nn.predict(X_test))
     print('Done training classifiers.')
-    print("\n")
 
     # The mean of the scores on the testing set.
     print('Artificial Neural Network Accuracy = %s' % (scores_nn.mean(axis=0)))

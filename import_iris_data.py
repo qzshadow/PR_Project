@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn import cross_validation
 from sklearn import preprocessing
+
 import os
 
 def generate_data(label_encode = True, n_folds = 10, iris_path = './iris.data'):
@@ -31,6 +32,10 @@ def generate_data(label_encode = True, n_folds = 10, iris_path = './iris.data'):
         labels = preprocessing.LabelEncoder().fit_transform(y)
     else:
         labels = y
+        
+    #Standarize the features
+    scaler = preprocessing.StandardScaler().fit(X)
+    X_train = scaler.transform(X)
 
     # Generate k stratified folds of the data.
-    return X,labels,n_folds,list(cross_validation.StratifiedKFold(labels, n_folds))
+    return X_train,labels,n_folds,list(cross_validation.StratifiedKFold(labels, n_folds))
