@@ -1,2 +1,2 @@
 # PR_Project
-the project of using nerual network two classify iris dataset
+the project of using nerual network to classify iris dataset
